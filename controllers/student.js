@@ -59,7 +59,6 @@ const recordTimeIn = async (req, res) => {
       await recordTimeOut(fingerprint);
       return res.status(200).json({
         message: "Time out recorded for student",
-        student: updatedStudent,
       });
     } else {
       student.timeEntries.push(timeEntry);
@@ -92,9 +91,38 @@ const recordTimeOut = async (fingerprint) => {
   }
 };
 
+const getStudents = async (req, res) => {
+  try {
+    // Extract year and section query parameters from request
+    const { year, section } = req.query;
+
+    // Define query object to filter students
+    const query = {};
+
+    // Add year and section filters if provided
+    if (year) {
+      query.year = year;
+    }
+    if (section) {
+      query.section = section;
+    }
+
+    // Query the database to find students based on the filters
+    const students = await Student.find(query);
+
+    // Send the response with the filtered students
+    res.status(200).json(students);
+  } catch (error) {
+    // Handle errors
+    console.error("Error fetching students:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   registerStudent,
   getAllStudents,
   recordTimeIn,
   recordTimeOut,
+  getStudents,
 };
