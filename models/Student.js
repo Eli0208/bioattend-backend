@@ -1,10 +1,9 @@
-// models/Student.js
-
 const mongoose = require("mongoose");
 
 const timeEntrySchema = new mongoose.Schema({
   timeIn: { type: Date },
   timeOut: { type: Date },
+  room: { type: String }, // Add room field here
 });
 
 const studentSchema = new mongoose.Schema({

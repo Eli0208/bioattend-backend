@@ -41,8 +41,8 @@ const getAllStudents = async (req, res) => {
   }
 };
 
-const recordTimeIn = async (req, res) => {
-  const fingerprint = req.body.fingerprint;
+const recordTime = async (req, res) => {
+  const { fingerprint, room } = req.body; // Extract fingerprint and room from request body
   try {
     const student = await Student.findOne({ fingerprint });
 
@@ -50,44 +50,34 @@ const recordTimeIn = async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    const latestTimeEntry = student.timeEntries[student.timeEntries.length - 1];
-
     const currentTime = moment.tz("Asia/Manila").toDate(); // Get current time in Manila timezone
-    const timeEntry = { timeIn: currentTime };
 
-    if (latestTimeEntry && !latestTimeEntry.timeOut) {
-      await recordTimeOut(fingerprint);
-      return res.status(200).json({
-        message: "Time out recorded for student",
-      });
+    // Find the latest time entry with no corresponding time out
+    const latestTimeEntry = student.timeEntries.find((entry) => !entry.timeOut);
+    if (latestTimeEntry) {
+      if (latestTimeEntry.room !== room) {
+        latestTimeEntry.timeOut = currentTime;
+        await student.save();
+        const newTimeEntry = { timeIn: currentTime, room };
+        student.timeEntries.push(newTimeEntry);
+        await student.save();
+      } else {
+        latestTimeEntry.timeOut = currentTime;
+        await student.save();
+      }
     } else {
+      console.log("iwascalled");
+      const timeEntry = { timeIn: currentTime, room };
       student.timeEntries.push(timeEntry);
       await student.save();
-      return res
-        .status(200)
-        .json({ message: "Time in recorded for student", student });
     }
+
+    return res
+      .status(200)
+      .json({ message: "Time recorded for student", student });
   } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-const recordTimeOut = async (fingerprint) => {
-  try {
-    const student = await Student.findOne({ fingerprint });
-
-    if (!student) {
-      console.log("Student not found");
-      return;
-    }
-
-    const latestTimeEntry = student.timeEntries[student.timeEntries.length - 1];
-    if (latestTimeEntry && !latestTimeEntry.timeOut) {
-      latestTimeEntry.timeOut = moment.tz("Asia/Manila").toDate(); // Update timeOut with current time in Manila timezone
-      await student.save();
-    }
-  } catch (error) {
-    console.error("Error recording time out:", error.message);
+    console.error("Error recording time:", error.message);
+    return res.status(500).json({ message: "Error recording time" });
   }
 };
 
@@ -119,10 +109,27 @@ const getStudents = async (req, res) => {
   }
 };
 
+async function getStudentByStudentNo(req, res) {
+  const { studentNo } = req.params;
+
+  try {
+    const student = await Student.findOne({ studentNo });
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.status(200).json(student);
+  } catch (error) {
+    console.error("Error fetching student:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 module.exports = {
   registerStudent,
   getAllStudents,
-  recordTimeIn,
-  recordTimeOut,
+  recordTime,
   getStudents,
+  getStudentByStudentNo,
 };

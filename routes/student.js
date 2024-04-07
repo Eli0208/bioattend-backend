@@ -3,9 +3,9 @@ const router = express.Router();
 const {
   registerStudent,
   getAllStudents,
-  recordTimeIn,
-  recordTimeOut,
+  recordTime,
   getStudents,
+  getStudentByStudentNo,
 } = require("../controllers/student");
 
 // POST /api/register
@@ -16,9 +16,8 @@ router.get("/students", getAllStudents);
 router.get("/studentsection", getStudents);
 
 // POST /api/record-time-in
-router.post("/record-time-in", recordTimeIn);
+router.post("/record-time-in", recordTime);
 
-// POST /api/record-time-out
-router.post("/record-time-out", recordTimeOut);
+router.get("/:studentNo", getStudentByStudentNo);
 
 module.exports = router;
