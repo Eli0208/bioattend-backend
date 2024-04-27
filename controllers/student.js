@@ -126,10 +126,63 @@ async function getStudentByStudentNo(req, res) {
   }
 }
 
+const editStudentById = async (req, res) => {
+  const { id } = req.params;
+  const {
+    studentNo,
+    studentFirstName,
+    studentMiddleName,
+    studentLastName,
+    year,
+    section,
+    fingerprint,
+  } = req.body;
+
+  try {
+    const updatedStudent = await Student.findByIdAndUpdate(
+      id,
+      {
+        studentNo,
+        studentFirstName,
+        studentMiddleName,
+        studentLastName,
+        year,
+        section,
+        fingerprint,
+      },
+      { new: true }
+    );
+
+    if (!updatedStudent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.json(updatedStudent);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteStudentById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Find the student by ID and delete it
+    await Student.findByIdAndDelete(id);
+    res.status(200).json({ message: "Student deleted successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to delete student", error: error.message });
+  }
+};
+
 module.exports = {
   registerStudent,
   getAllStudents,
   recordTime,
   getStudents,
   getStudentByStudentNo,
+  editStudentById,
+  deleteStudentById,
 };

@@ -19,20 +19,20 @@ const generateTimeEntries = (startDate, endDate) => {
 
   while (currentDate.isSameOrBefore(endDateMoment)) {
     // Check if the current date is a Monday
-    if (currentDate.day() === 1) {
+    if (currentDate.day() === 4) {
       // If it's Monday, generate a time entry for 10am to 1pm
       const timeIn = currentDate
         .clone()
         .set({ hour: 10, minute: 0, second: 0 });
       const timeOut = currentDate
         .clone()
-        .set({ hour: 13, minute: 0, second: 0 });
+        .set({ hour: 11, minute: 30, second: 0 });
 
       // Add the time entry to the array with room "Digital Lab"
       timeEntries.push({
         timeIn: timeIn.toDate(),
         timeOut: timeOut.toDate(),
-        room: "Digital Lab", // Add room information here
+        room: "Analog Lab", // Add room information here
       });
     }
 
@@ -44,10 +44,10 @@ const generateTimeEntries = (startDate, endDate) => {
 };
 
 // ID of the student you want to add time entries for
-const studentId = "66120a0080f2b44c25967a46";
+const studentId = "66111fb91d0b51821624a0c5";
 
 // Generate time entries for Mondays from March 11 to April 5
-const timeEntries = generateTimeEntries("2024-03-11", "2024-04-05");
+const timeEntries = generateTimeEntries("2024-02-05", "2024-06-07");
 
 // Update the student document in the database
 Student.findByIdAndUpdate(
