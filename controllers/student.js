@@ -42,7 +42,7 @@ const getAllStudents = async (req, res) => {
 };
 
 const recordTime = async (req, res) => {
-  const { fingerprint, room } = req.body; // Extract fingerprint and room from request body
+  const { fingerprint, room } = req.body;
   try {
     const student = await Student.findOne({ fingerprint });
 
@@ -50,25 +50,15 @@ const recordTime = async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    const currentTime = moment.tz("Asia/Manila").toDate(); // Get current time in Manila timezone
-
-    // Find the latest time entry with no corresponding time out
+    const currentTime = moment.tz("Asia/Manila").toDate();
     const latestTimeEntry = student.timeEntries.find((entry) => !entry.timeOut);
+
     if (latestTimeEntry) {
-      if (latestTimeEntry.room !== room) {
-        latestTimeEntry.timeOut = currentTime;
-        await student.save();
-        const newTimeEntry = { timeIn: currentTime, room };
-        student.timeEntries.push(newTimeEntry);
-        await student.save();
-      } else {
-        latestTimeEntry.timeOut = currentTime;
-        await student.save();
-      }
+      latestTimeEntry.timeOut = currentTime;
+      await student.save();
     } else {
-      console.log("iwascalled");
-      const timeEntry = { timeIn: currentTime, room };
-      student.timeEntries.push(timeEntry);
+      const newTimeEntry = { timeIn: currentTime, room };
+      student.timeEntries.push(newTimeEntry);
       await student.save();
     }
 
@@ -83,13 +73,9 @@ const recordTime = async (req, res) => {
 
 const getStudents = async (req, res) => {
   try {
-    // Extract year and section query parameters from request
     const { year, section } = req.query;
-
-    // Define query object to filter students
     const query = {};
 
-    // Add year and section filters if provided
     if (year) {
       query.year = year;
     }
@@ -97,19 +83,15 @@ const getStudents = async (req, res) => {
       query.section = section;
     }
 
-    // Query the database to find students based on the filters
     const students = await Student.find(query);
-
-    // Send the response with the filtered students
     res.status(200).json(students);
   } catch (error) {
-    // Handle errors
     console.error("Error fetching students:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
-async function getStudentByStudentNo(req, res) {
+const getStudentByStudentNo = async (req, res) => {
   const { studentNo } = req.params;
 
   try {
@@ -124,7 +106,7 @@ async function getStudentByStudentNo(req, res) {
     console.error("Error fetching student:", error);
     res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 const editStudentById = async (req, res) => {
   const { id } = req.params;
@@ -167,7 +149,6 @@ const deleteStudentById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Find the student by ID and delete it
     await Student.findByIdAndDelete(id);
     res.status(200).json({ message: "Student deleted successfully" });
   } catch (error) {
